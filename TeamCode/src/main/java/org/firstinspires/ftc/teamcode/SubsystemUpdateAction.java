@@ -35,16 +35,17 @@ public class SubsystemUpdateAction implements Action {
         // Always service subsystems
         indexer.update(sensorDisplay);
         indexer.updatePush();
-        if (intake != null) intake.update();
+        if (intake != null) intake.update(sensorDisplay);
+        Parameters.startPose = drive.localizer.getPose();
 
         // DO NOT auto-index off the distance sensor while launching
         if (!BlueFarParameters.launching && BlueFarParameters.autoIndexEnabled) {
 
-            if (indexer.DrumAtTarget() && indexer.drum_in_out == 1) {
+            if (indexer.DrumAtTarget() && Parameters.drum_in_out == 1) {
 
                 if (sensorDisplay.GetDetectedDistance() < BALL_DETECT_MM) {
 
-                    int currentPocket = indexer.pocketTarget;
+                    int currentPocket = Parameters.pocketTarget;
                     switch (currentPocket) {
                         case 1:
                             indexer.setAlignment(DrumIndexer.Pocket.TWO, DrumIndexer.Port.IN);

@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.RaceAction;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name = "Blue Far Auto", group = "Autonomous")
@@ -68,6 +69,7 @@ public class BlueFarAuto extends LinearOpMode {
             indexer.update(sensorDisplay);
             indexer.updatePush();
             drive.updatePoseEstimate();
-            intakeControl.update();
+            Parameters.startPose = drive.localizer.getPose();
+            intakeControl.update(sensorDisplay);
             telemetry.update();
         }}}

@@ -1,23 +1,22 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Drum Index Test OpMode", group = "Test")
-public class DrumIndexerTest extends LinearOpMode {
+@TeleOp(name = "Driver Control", group = "Test")
+public class DriverControl extends LinearOpMode {
 
     private DrumIndexer indexer;
     private SensorDisplay sensorDisplay;
     private LauncherControl launcherControl;
     private IntakeControl intakeControl;
     private DriverMecanum driveControl;
-    Pose2d beginPose = new Pose2d(-68, 0, 45);
+    Pose2d beginPose = Parameters.startPose;
     Pose2d currentPose = new Pose2d(0,0,0);
     private int launcherOn = 0;
+    private int resetButtonLastState = 0;
     @Override
     public void runOpMode() {
         // Initialize indexer
@@ -33,6 +32,7 @@ public class DrumIndexerTest extends LinearOpMode {
 
         while(!opModeIsActive()){
             telemetry.addData("distance = ", sensorDisplay.GetDetectedDistance());
+            sensorDisplay.displayData(telemetry);
             telemetry.addData("DrumPosition = ", indexer.getCurrentPosition());
             telemetry.update();
         }
@@ -41,12 +41,19 @@ public class DrumIndexerTest extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            if(gamepad1.dpad_left){indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.IN);}
-            if(gamepad1.dpad_up){indexer.setAlignment(DrumIndexer.Pocket.TWO, DrumIndexer.Port.IN);}
-            if(gamepad1.dpad_right){indexer.setAlignment(DrumIndexer.Pocket.THREE, DrumIndexer.Port.IN);}
+            if(gamepad1.y && resetButtonLastState == 0){
+                if (Parameters.correction == 0){Parameters.correction = Parameters.IN_TO_OUT_OFFSET;}
+                else{Parameters.correction = 0;}
+                indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.IN);
+                resetButtonLastState = 1;
+            }
+            else{
+                resetButtonLastState = 0;
+            }
 
              if (gamepad1.left_bumper) {
                //  Rapid output: Align each to OUT and push
+                 indexer.outBlock.setPosition(.5);
                  launcherOn = 1;
 
                      double currentLocationX = drive.localizer.getPose().position.x;
@@ -60,6 +67,7 @@ public class DrumIndexerTest extends LinearOpMode {
                 indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.IN);
                 //launcherControl.setRPM(0);
                  launcherOn = 0;
+                 indexer.outBlock.setPosition(1);
            } else
                 if (gamepad1.x) {
                 indexer.startPush(); // Single push test
@@ -70,10 +78,10 @@ public class DrumIndexerTest extends LinearOpMode {
             if(gamepad1.b){intakeControl.startReverse();}//test git
 
             if(indexer.DrumAtTarget()) {
-                if(indexer.drum_in_out == 1){
-
+                if(Parameters.drum_in_out == 1){
+                //if(sensorDisplay.GetDetectedDistance() < 180){Parameters.intakeManual = 1;}else{Parameters.intakeManual = 0;}
                 if (sensorDisplay.GetDetectedDistance() < 70) {
-                    int currentPocket = indexer.pocketTarget;
+                    int currentPocket = Parameters.pocketTarget;
                     switch (currentPocket){
 
                         case 1:
@@ -86,8 +94,9 @@ public class DrumIndexerTest extends LinearOpMode {
 
                         case 3:
                             indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.OUT);
-                            launcherOn = 1;
+                            //launcherOn = 1;
                             //launcherControl.setRPM(Parameters.farRPM);
+                            intakeControl.startReverse();
                         break;
 
                 }
@@ -104,12 +113,12 @@ public class DrumIndexerTest extends LinearOpMode {
             indexer.update(sensorDisplay);
             indexer.updatePush();
             sensorDisplay.displayData(telemetry);
-            intakeControl.update();
+            intakeControl.update(sensorDisplay);
             driveControl.update(gamepad1);
             drive.updatePoseEstimate();
 
 
-            telemetry.addData("Indexer Target Pocket", indexer.pocketTarget + "," + indexer.drum_in_out);
+            telemetry.addData("Indexer Target Pocket", Parameters.pocketTarget + "," + Parameters.drum_in_out);
             telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
             telemetry.addData("Target Position", indexer.getTargetPosition());
             telemetry.addData("Current Position", indexer.getCurrentPosition());
@@ -130,7 +139,7 @@ public class DrumIndexerTest extends LinearOpMode {
         while (opModeIsActive() && alignTimer.milliseconds() < 3000) { // 2s timeout for alignment (tune)
             indexer.update(sensorDisplay);
             indexer.updatePush();
-            intakeControl.update();
+            intakeControl.update(sensorDisplay);
             driveControl.update(gamepad1);
             telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
             telemetry.addData("Target Position", indexer.getTargetPosition());
@@ -144,6 +153,8 @@ public class DrumIndexerTest extends LinearOpMode {
                 while (opModeIsActive() && !indexer.isPushComplete() && pushTimer.milliseconds() < 2000) { // 1s timeout for push (tune)
                     indexer.update(sensorDisplay);
                     indexer.updatePush();
+                    intakeControl.update(sensorDisplay);
+                    driveControl.update(gamepad1);
                 }
                 break;
             }

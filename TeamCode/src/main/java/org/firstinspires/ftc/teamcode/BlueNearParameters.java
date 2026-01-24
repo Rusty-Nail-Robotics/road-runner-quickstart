@@ -14,8 +14,8 @@ public class BlueNearParameters {
 
     //FIRST LAUNCH LOCATION
     public static Vector2d launchLocation = new Vector2d(-15,-15);
-    public static double launchHeading = 225;
-    public static double launchRPM = 1600;
+    public static double launchHeading = 235;
+    public static double launchRPM = 1700;
 
     //FIRST GRAB LOCATION
     public static Pose2d firstGrab = new Pose2d(-18, -30, Math.toRadians(270));

@@ -33,6 +33,7 @@ import com.acmerobotics.roadrunner.ftc.PinpointIMU;
 import com.acmerobotics.roadrunner.ftc.PinpointView;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
@@ -56,9 +57,10 @@ public final class TuningOpModes {
     public static final Class<?> DRIVE_CLASS = MecanumDrive.class;
 
     public static final String GROUP = "quickstart";
-    public static final boolean DISABLED = false;
+    public static final boolean DISABLED = true;
 
     private TuningOpModes() {}
+
 
     private static OpModeMeta metaForClass(Class<? extends OpMode> cls) {
         return new OpModeMeta.Builder()

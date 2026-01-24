@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Pose2d;
 
 @Config
 public class Parameters {
+    public static Pose2d startPose = new Pose2d(-60, -52, Math.toRadians(225));
 
     public static double drumP = 0.004;
     public static double drumI = 0.0;
@@ -19,5 +21,10 @@ public class Parameters {
     public static  int POCKET1_IN = 0;
     public static  int POCKET2_IN = 1350;//268; //1167;//2730;
     public static  int POCKET3_IN = 2650;//518; //2333;//5461;
+
+    public static int pocketTarget = 1;
+    public static int drum_in_out = 1;
+    public static int correction = 0;
+    public static int intakeManual = 0;
 
 }

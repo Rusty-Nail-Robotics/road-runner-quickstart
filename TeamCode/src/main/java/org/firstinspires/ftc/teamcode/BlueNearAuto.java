@@ -42,7 +42,7 @@ public class BlueNearAuto extends LinearOpMode {
                 .turnTo(Math.toRadians(BlueNearParameters.launchHeading))
                 .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueNearParameters.launchRPM))
                 .turnTo(Math.toRadians(270))
-                .splineToSplineHeading(BlueNearParameters.firstGrab,Math.toRadians(270))
+                .splineToSplineHeading(BlueNearParameters.firstGrab,Math.toRadians(280))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
                 .lineToY(BlueNearParameters.firstGrab.position.y + BlueNearParameters.intakeForwardDistance,new TranslationalVelConstraint(BlueNearParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
@@ -69,6 +69,7 @@ public class BlueNearAuto extends LinearOpMode {
             indexer.update(sensorDisplay);
             indexer.updatePush();
             drive.updatePoseEstimate();
-            intakeControl.update();
+            Parameters.startPose = drive.localizer.getPose();
+            intakeControl.update(sensorDisplay);
             telemetry.update();
         }}}

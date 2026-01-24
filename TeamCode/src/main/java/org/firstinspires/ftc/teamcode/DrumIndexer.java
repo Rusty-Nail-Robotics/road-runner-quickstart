@@ -29,7 +29,7 @@ public class DrumIndexer {
 
     private DcMotorEx drum;
     private Servo pusher; // Optional, if needed for pushing
-    private Servo outBlock;
+    public Servo outBlock;
     private Servo inBlock;
     private PIDFController drumPIDF;
     private int targetPosition = 0;
@@ -42,8 +42,7 @@ public class DrumIndexer {
 
     private boolean retracting = false;
     private long retractStartTime = 0;
-    public int pocketTarget = 1;
-    public int drum_in_out = 1;
+
 
     // Constructor: Initialize with HardwareMap
     public DrumIndexer(HardwareMap hardwareMap) {
@@ -65,31 +64,36 @@ public class DrumIndexer {
         inBlock.setPosition(0.0); // Assume 0.0 is open (allow intake); tune if reversed
     }
 
+    public void ResetIndexer (){
+
+
+    }
+
     // Method to select pocket and port alignment
     public void setAlignment(Pocket pocket, Port port) {
         int basePosition = 0;
         switch (pocket) {
             case ONE:
                 basePosition = Parameters.POCKET1_IN;
-                pocketTarget = 1;
+                Parameters.pocketTarget = 1;
                 break;
             case TWO:
                 basePosition = Parameters.POCKET2_IN;
-                pocketTarget = 2;
+                Parameters.pocketTarget = 2;
                 break;
             case THREE:
                 basePosition = Parameters.POCKET3_IN;
-                pocketTarget = 3;
+                Parameters.pocketTarget = 3;
                 break;
         }
 
         if (port == Port.OUT) {
             basePosition += Parameters.IN_TO_OUT_OFFSET;
-            drum_in_out = 0;
+            Parameters.drum_in_out = 0;
         }
-        else{drum_in_out = 1;}
+        else{Parameters.drum_in_out = 1;}
 
-        targetPosition = basePosition;
+        targetPosition = basePosition + Parameters.correction;
     }
 
     // Update method: Call this in the main loop to apply power
@@ -100,11 +104,11 @@ public class DrumIndexer {
         drum.setPower(outputPower);
 
         // Block intake if drum is rotating (not stable)
-        if (sensorDisplay.GetDetectedDistance() < 100 && drum_in_out == 1) {
+        if (sensorDisplay.GetDetectedDistance() < 50 && Parameters.drum_in_out == 1) {
             inBlock.setPosition(1.0); // Assume 1.0 is block (close); tune if reversed
-        } else {
-            inBlock.setPosition(0.2); // Open (allow intake)
-        }
+       } else {
+           inBlock.setPosition(0.2); // Open (allow intake)
+       }
     }
 
     public boolean DrumAtTarget(){
@@ -137,7 +141,7 @@ public class DrumIndexer {
     // Non-blocking: Start the push action
     public void startPush() {
         if (!pushing && !retracting) {
-            outBlock.setPosition(.5);
+            //outBlock.setPosition(.5);
             pusher.setPosition(1.0); // Extend to push
             pushStartTime = System.currentTimeMillis();
             pushing = true;
@@ -148,7 +152,7 @@ public class DrumIndexer {
     public void updatePush() {
         if (pushing) {
             if (System.currentTimeMillis() - pushStartTime >= EXTEND_HOLD_MS + RETRACT_DELAY_MS) {
-                outBlock.setPosition(1);
+                //outBlock.setPosition(1);
                 pusher.setPosition(0.0); // Retract after delay
                 retractStartTime = System.currentTimeMillis();
                 pushing = false;
