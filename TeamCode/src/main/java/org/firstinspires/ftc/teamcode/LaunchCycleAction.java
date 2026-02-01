@@ -41,7 +41,8 @@ public class LaunchCycleAction implements Action {
         if (!started) {
             started = true;
             BlueFarParameters.launching = true; // LOCKOUT ON
-
+            indexer.outBlock.setPosition(.5);
+            Parameters.drum_in_out=0;
             // RPM selection (adjust sign based on your field coords)
             launcher.setRPM(launchRPM);
 
@@ -84,6 +85,7 @@ public class LaunchCycleAction implements Action {
             default:
                 // Finished
                 BlueFarParameters.launching = false;
+                Parameters.drum_in_out=1;
                 return false;
         }
     }

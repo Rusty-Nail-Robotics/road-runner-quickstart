@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name = "Blue Far Auto", group = "Autonomous")
+@Autonomous(name = "Red Wall Auto", group = "Autonomous")
 public class RedFarAuto extends LinearOpMode {
 
     private DrumIndexer indexer;
@@ -30,7 +30,8 @@ public class RedFarAuto extends LinearOpMode {
         launcherControl = new LauncherControl(hardwareMap);
         intakeControl = new IntakeControl(hardwareMap);
         sensorDisplay = new SensorDisplay(hardwareMap);
-
+        indexer.inBlock.setPosition(1.0);
+        Parameters.drum_in_out = 0;
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
 
@@ -42,7 +43,7 @@ public class RedFarAuto extends LinearOpMode {
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
                 .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedFarParameters.launchRPM))
-                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(270))
+                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(270))//270
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
                 .lineToY(RedFarParameters.firstGrab.position.y + RedFarParameters.intakeForwardDistance,new TranslationalVelConstraint(RedFarParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
@@ -72,4 +73,8 @@ public class RedFarAuto extends LinearOpMode {
             Parameters.startPose = drive.localizer.getPose();
             intakeControl.update(sensorDisplay);
             telemetry.update();
-        }}}
+        }
+
+
+    }
+}

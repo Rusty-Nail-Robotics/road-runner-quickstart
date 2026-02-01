@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name = "Blue Far Auto", group = "Autonomous")
+@Autonomous(name = "Blue Wall Auto", group = "Autonomous")
 public class BlueFarAuto extends LinearOpMode {
 
     private DrumIndexer indexer;
@@ -30,7 +30,8 @@ public class BlueFarAuto extends LinearOpMode {
         launcherControl = new LauncherControl(hardwareMap);
         intakeControl = new IntakeControl(hardwareMap);
         sensorDisplay = new SensorDisplay(hardwareMap);
-
+        indexer.inBlock.setPosition(1.0);
+        Parameters.drum_in_out = 0;
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
 

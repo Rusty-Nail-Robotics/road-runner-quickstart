@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name = "Blue Near Auto", group = "Autonomous")
+@Autonomous(name = "Red Basket Auto", group = "Autonomous")
 public class RedNearAuto extends LinearOpMode {
 
     private DrumIndexer indexer;
@@ -32,26 +32,27 @@ public class RedNearAuto extends LinearOpMode {
 
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
-
+        indexer.inBlock.setPosition(1.0);
+        Parameters.drum_in_out = 0;
         waitForStart();
 
         // Build and run trajectory to target pose
 
         Action main = drive.actionBuilder(RedNearParameters.startPose)
                 .strafeTo(RedNearParameters.launchLocation)
-                .turnTo(Math.toRadians(RedNearParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedNearParameters.launchRPM))
-                .turnTo(Math.toRadians(270))
-                .splineToSplineHeading(RedNearParameters.firstGrab,Math.toRadians(280))
-                .stopAndAdd(new SetAutoIndexEnabledAction(true))
+                //.turnTo(Math.toRadians(RedNearParameters.launchHeading))
+                //.stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedNearParameters.launchRPM))
+                //.turnTo(Math.toRadians(90))//270 Flipped from blue
+                //.splineToSplineHeading(RedNearParameters.firstGrab,Math.toRadians(100))//280
+                //.stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
-                .lineToY(RedNearParameters.firstGrab.position.y + RedNearParameters.intakeForwardDistance,new TranslationalVelConstraint(RedNearParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
-                )
-                .stopAndAdd(new SetAutoIndexEnabledAction(false))
+                //.lineToY(RedNearParameters.firstGrab.position.y + RedNearParameters.intakeForwardDistance,new TranslationalVelConstraint(RedNearParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
+                //)
+                //.stopAndAdd(new SetAutoIndexEnabledAction(false))
                 // New: Return to launch and fire again
-                .strafeTo(RedNearParameters.launchLocation)
-                .turnTo(Math.toRadians(RedNearParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer, launcherControl, drive, RedNearParameters.launchRPM))  // Second launch cycle
+                //.strafeTo(RedNearParameters.launchLocation)
+                //.turnTo(Math.toRadians(RedNearParameters.launchHeading))
+                //.stopAndAdd(new LaunchCycleAction(indexer, launcherControl, drive, RedNearParameters.launchRPM))  // Second launch cycle
                 .build();
 
         Actions.runBlocking(

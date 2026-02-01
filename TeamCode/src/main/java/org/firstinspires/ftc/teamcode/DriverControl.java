@@ -16,6 +16,8 @@ public class DriverControl extends LinearOpMode {
     Pose2d beginPose = Parameters.startPose;
     Pose2d currentPose = new Pose2d(0,0,0);
     private int launcherOn = 0;
+    private int launcherHigh = 0;
+    private int launcherHighButtonLastState = 0;
     private int resetButtonLastState = 0;
     @Override
     public void runOpMode() {
@@ -26,6 +28,7 @@ public class DriverControl extends LinearOpMode {
         launcherControl = new LauncherControl(hardwareMap);
         intakeControl = new IntakeControl(hardwareMap);
         driveControl = new DriverMecanum(hardwareMap);
+        Parameters.drum_in_out = 1;
 
 
 
@@ -51,14 +54,25 @@ public class DriverControl extends LinearOpMode {
                 resetButtonLastState = 0;
             }
 
+            if(gamepad1.x && launcherHighButtonLastState == 0){
+               if(launcherHigh == 0){launcherHigh = 1;}
+               else{launcherHigh = 0;}
+                launcherHighButtonLastState = 1;
+            }
+            else{
+                launcherHighButtonLastState = 0;
+            }
+
              if (gamepad1.left_bumper) {
                //  Rapid output: Align each to OUT and push
                  indexer.outBlock.setPosition(.5);
                  launcherOn = 1;
+                        if (launcherHigh == 1 ){launcherControl.setRPM(Parameters.farRPM);}
+                        else{launcherControl.setRPM(Parameters.closeRPM);}
 
-                     double currentLocationX = drive.localizer.getPose().position.x;
-                     if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
-                     if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
+                     //double currentLocationX = drive.localizer.getPose().position.x;
+                     //if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
+                     //if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
 
                  // launcherControl.setRPM(Parameters.farRPM);
                 alignAndPush(DrumIndexer.Pocket.ONE, DrumIndexer.Port.OUT);
@@ -67,11 +81,12 @@ public class DriverControl extends LinearOpMode {
                 indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.IN);
                 //launcherControl.setRPM(0);
                  launcherOn = 0;
+                 launcherHigh = 0;
                  indexer.outBlock.setPosition(1);
-           } else
-                if (gamepad1.x) {
-                indexer.startPush(); // Single push test
-            }
+           }// else
+               // if (gamepad1.x) {
+              //  indexer.startPush(); // Single push test
+           // }
             if(gamepad1.start){launcherOn = 1;}//launcherControl.setRPM(Parameters.farRPM);}
             if(gamepad1.back){launcherOn = 0;}//launcherControl.setRPM(0);}
 
@@ -94,7 +109,7 @@ public class DriverControl extends LinearOpMode {
 
                         case 3:
                             indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.OUT);
-                            //launcherOn = 1;
+                            launcherOn = 1;
                             //launcherControl.setRPM(Parameters.farRPM);
                             intakeControl.startReverse();
                         break;
@@ -103,9 +118,11 @@ public class DriverControl extends LinearOpMode {
             }}}
 
             if(launcherOn == 1){
-                double currentLocationX = drive.localizer.getPose().position.x;
-                if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
-                if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
+                if (launcherHigh == 1 ){launcherControl.setRPM(Parameters.farRPM);}
+                else{launcherControl.setRPM(Parameters.closeRPM);}
+//                double currentLocationX = drive.localizer.getPose().position.x;
+  //              if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
+    //            if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
             }else{
                 launcherControl.setRPM(0);
             }

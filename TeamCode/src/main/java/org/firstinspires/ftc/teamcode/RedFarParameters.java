@@ -14,7 +14,7 @@ public class RedFarParameters {
 
     //FIRST LAUNCH LOCATION
     public static Vector2d launchLocation = new Vector2d(60,0);
-    public static double launchHeading = 10;
+    public static double launchHeading = 150;
     public static double launchRPM = Parameters.farRPM;
 
     //FIRST GRAB LOCATION

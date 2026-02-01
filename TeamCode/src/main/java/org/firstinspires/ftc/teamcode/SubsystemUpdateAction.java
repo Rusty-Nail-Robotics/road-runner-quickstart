@@ -40,7 +40,8 @@ public class SubsystemUpdateAction implements Action {
 
         // DO NOT auto-index off the distance sensor while launching
         if (!BlueFarParameters.launching && BlueFarParameters.autoIndexEnabled) {
-
+//indexer.inBlock.setPosition(.2);
+            Parameters.drum_in_out=1;
             if (indexer.DrumAtTarget() && Parameters.drum_in_out == 1) {
 
                 if (sensorDisplay.GetDetectedDistance() < BALL_DETECT_MM) {
@@ -61,6 +62,8 @@ public class SubsystemUpdateAction implements Action {
                             double x = drive.localizer.getPose().position.x;
                             if (x > 30) {launcher.setRPM(Parameters.farRPM);}
                             else         {launcher.setRPM(Parameters.closeRPM);}
+                            //indexer.inBlock.setPosition(1.0);
+                            Parameters.drum_in_out=0;
                             break;
                     }
                 }

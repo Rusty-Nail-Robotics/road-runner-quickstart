@@ -30,7 +30,7 @@ public class DrumIndexer {
     private DcMotorEx drum;
     private Servo pusher; // Optional, if needed for pushing
     public Servo outBlock;
-    private Servo inBlock;
+    public Servo inBlock;
     private PIDFController drumPIDF;
     private int targetPosition = 0;
 
