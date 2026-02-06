@@ -1,29 +1,23 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.security.KeyStore;
-
 public class DrumIndexer {
+    //UltraPlanetary 1:1 == 28 cpr, Worm == 28:1,  Total CPR ==784, half rot == 392
 
-    // Enums for pocket and port selection
-    public enum Pocket {
-        ONE,
-        TWO,
-        THREE
-    }
+    private int pocketLocation0 = 0;//intake pocket 1
+    private int pocketLocation1 = 131;//Output pocket 2
+    private int pocketLocation2 = 261;//intake pocket 3
+    private int pocketLocation3 = 392;//output Pocket 1
+    private int pocketLocation4 = 522;//intake pocket 2
+    private int pocketLocation5 = 653;//output pocket 3
+    public int[] pocketLocationArray = {pocketLocation0, pocketLocation1, pocketLocation2, pocketLocation3, pocketLocation4, pocketLocation5};
 
-    public enum Port {
-        IN,
-        OUT
-    }
-
-    // Constants from your code
+    public int targetPocket = 0;
 
 
 
@@ -33,6 +27,8 @@ public class DrumIndexer {
     private Servo inBlock;
     private PIDFController drumPIDF;
     private int targetPosition = 0;
+    private int drumTargetTolerance = 25;
+    private int drumTargetVelocityTolerance = 100;
 
     // Non-blocking push state
     private boolean pushing = false;
@@ -45,7 +41,7 @@ public class DrumIndexer {
 
 
     // Constructor: Initialize with HardwareMap
-    public DrumIndexer(HardwareMap hardwareMap) {
+    public void DrumIndexerInit(HardwareMap hardwareMap) {
         drum = hardwareMap.get(DcMotorEx.class, "indexDrum");
         pusher = hardwareMap.get(Servo.class, "pusher");
         outBlock = hardwareMap.get(Servo.class, "outBlock");
@@ -64,92 +60,11 @@ public class DrumIndexer {
         inBlock.setPosition(0.0); // Assume 0.0 is open (allow intake); tune if reversed
     }
 
-    public void ResetIndexer (){
-
-
-    }
-
-    // Method to select pocket and port alignment
-    public void setAlignment(Pocket pocket, Port port) {
-        int basePosition = 0;
-        switch (pocket) {
-            case ONE:
-                basePosition = Parameters.POCKET1_IN;
-                Parameters.pocketTarget = 1;
-                break;
-            case TWO:
-                basePosition = Parameters.POCKET2_IN;
-                Parameters.pocketTarget = 2;
-                break;
-            case THREE:
-                basePosition = Parameters.POCKET3_IN;
-                Parameters.pocketTarget = 3;
-                break;
-        }
-
-        if (port == Port.OUT) {
-            basePosition += Parameters.IN_TO_OUT_OFFSET;
-            Parameters.drum_in_out = 0;
-        }
-        else{Parameters.drum_in_out = 1;}
-
-        targetPosition = basePosition + Parameters.correction;
-    }
-
-    // Update method: Call this in the main loop to apply power
-    public void update(SensorDisplay sensorDisplay) {
-        drumPIDF.setPIDF(Parameters.drumP, Parameters.drumI, Parameters.drumD, Parameters.drumF);
-        double currentPosition = drum.getCurrentPosition();
+    public void update() {
+        double currentPosition = GetDrumPosition();
         double outputPower = drumPIDF.calculate(currentPosition, targetPosition);
         drum.setPower(outputPower);
 
-        // Block intake if drum is rotating (not stable)
-        if (sensorDisplay.GetDetectedDistance() < 50 && Parameters.drum_in_out == 1) {
-            inBlock.setPosition(1.0); // Assume 1.0 is block (close); tune if reversed
-       } else {
-           inBlock.setPosition(0.2); // Open (allow intake)
-       }
-    }
-
-    public boolean DrumAtTarget(){
-        if (Math.abs(drum.getVelocity()) <= 500 && Math.abs(drum.getCurrentPosition() - targetPosition) <= 300){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    // Wider tolerance for servo to reduce jitter during settling
-    public boolean DrumStableForServo(){
-        if (Math.abs(drum.getCurrentPosition() - targetPosition) <= 70){ // Twice as wide as DrumAtTarget
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    // Optional: Get current target for telemetry
-    public int getTargetPosition() {
-        return targetPosition;
-    }
-
-    // Optional: Get current drum position for telemetry
-    public int getCurrentPosition() {
-        return drum.getCurrentPosition();
-    }
-
-    // Non-blocking: Start the push action
-    public void startPush() {
-        if (!pushing && !retracting) {
-            //outBlock.setPosition(.5);
-            pusher.setPosition(1.0); // Extend to push
-            pushStartTime = System.currentTimeMillis();
-            pushing = true;
-        }
-    }
-
-    // Non-blocking update for push (call in main loop after update())
-    public void updatePush() {
         if (pushing) {
             if (System.currentTimeMillis() - pushStartTime >= EXTEND_HOLD_MS + RETRACT_DELAY_MS) {
                 //outBlock.setPosition(1);
@@ -163,11 +78,89 @@ public class DrumIndexer {
                 retracting = false;
             }
         }
+
+    }
+    public void SetDrumPosition(int drumPocketTarget) {
+        targetPocket = drumPocketTarget;
+        targetPosition = pocketLocationArray[drumPocketTarget];
+
     }
 
-    // Check if push/retract cycle is complete (for sequencing)
+    public void DrumMove(int pocketsToMove){
+        int steps = Math.abs(pocketsToMove);
+        int direction = (pocketsToMove >=0) ? 1 : -1;
+        for (int i = 0; i < steps; i++){
+            targetPocket = targetPocket + direction;
+            if(targetPocket > 6){
+                targetPocket = 1;
+            } else if (targetPocket < 0) {
+                targetPocket = 6;
+            }
+        }
+
+        targetPosition = pocketLocationArray[targetPocket];
+    }
+
+    public int GetClosestPocket(){
+        int closestPocket;
+        int currentPosition = GetDrumPosition();
+        int pocket0_1Halfway = (pocketLocationArray[1]-pocketLocationArray[0])/2;
+        int pocket1_2Halfway = (pocketLocationArray[2]-pocketLocationArray[1])/2;
+        int pocket2_3Halfway = (pocketLocationArray[3]-pocketLocationArray[2])/2;
+        int pocket3_4Halfway = (pocketLocationArray[4]-pocketLocationArray[3])/2;
+        int pocket4_5Halfway = (pocketLocationArray[5]-pocketLocationArray[4])/2;
+        int pocket5_6Halfway = (pocketLocationArray[6]-pocketLocationArray[5])/2;
+        if(currentPosition <=  pocket0_1Halfway){
+            closestPocket = 0;
+        } else if (currentPosition <= pocket1_2Halfway && currentPosition > pocket0_1Halfway) {
+            closestPocket = 1;
+        } else if (currentPosition <= pocket2_3Halfway && currentPosition > pocket1_2Halfway) {
+            closestPocket = 2;
+        } else if (currentPosition <= pocket3_4Halfway && currentPosition > pocket2_3Halfway) {
+            closestPocket = 3;
+        } else if (currentPosition <= pocket4_5Halfway && currentPosition > pocket5_6Halfway) {
+            closestPocket = 4;
+        } else if (currentPosition <= pocket5_6Halfway && currentPosition > pocket4_5Halfway) {
+            closestPocket = 5;
+        } else if (currentPosition > pocket5_6Halfway) {
+            closestPocket = 6;
+        }else{
+            closestPocket = 0;
+        }
+
+        return closestPocket;
+    }
+
+    public int GetDrumPosition(){
+        return drum.getCurrentPosition();
+    }
+
+    public double GetDrumVelocity(){
+        return drum.getVelocity();
+    }
+
+    public boolean DrumAtTarget(){
+        if (Math.abs(GetDrumVelocity()) <= drumTargetVelocityTolerance && Math.abs(GetDrumPosition() - targetPosition) <= drumTargetTolerance){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public boolean isPushComplete() {
         return !pushing && !retracting;
     }
+
+    public void startPush() {
+        if (!pushing && !retracting) {
+            //outBlock.setPosition(.5);
+            pusher.setPosition(1.0); // Extend to push
+            pushStartTime = System.currentTimeMillis();
+            pushing = true;
+        }
+    }
+
+
+
 
 }
