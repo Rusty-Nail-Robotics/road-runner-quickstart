@@ -46,32 +46,33 @@ public class LaunchCycleAction implements Action {
             launcher.setRPM(launchRPM);
 
             // Start with pocket ONE alignment
-            startAlign(DrumIndexer.Pocket.ONE, DrumIndexer.Port.OUT);
+            startAlign(5);
         }
 
-        packet.put("launchStep", step);
-        packet.put("launchPhase", phase.toString());
-        packet.put("launching", BlueFarParameters.launching);
-
+        if(Parameters.telemetryOutput) {
+            packet.put("launchStep", step);
+            packet.put("launchPhase", phase.toString());
+            packet.put("launching", BlueFarParameters.launching);
+        }
         switch (step) {
             case 0: // Pocket ONE OUT
                 if (runAlignSpinupAndPush()) {
                     step++;
-                    startAlign(DrumIndexer.Pocket.TWO, DrumIndexer.Port.OUT);
+                    startAlign(5);
                 }
                 return true;
 
             case 1: // Pocket TWO OUT
                 if (runAlignAndPush()) {
                     step++;
-                    startAlign(DrumIndexer.Pocket.THREE, DrumIndexer.Port.OUT);
+                    startAlign(3);
                 }
                 return true;
 
             case 2: // Pocket THREE OUT
                 if (runAlignAndPush()) {
                     // Reset to pocket ONE IN
-                    indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.IN);
+                    indexer.SetDrumPosition(0);
 
                     // Stop launcher
                     launcher.setRPM(0);
@@ -88,10 +89,10 @@ public class LaunchCycleAction implements Action {
         }
     }
 
-    private void startAlign(DrumIndexer.Pocket pocket, DrumIndexer.Port port) {
+    private void startAlign(int pocket) {
         phase = Phase.ALIGNING;
         timer.reset();
-        indexer.setAlignment(pocket, port);
+        indexer.SetDrumPosition(pocket);
     }
 
     // For first pocket: align -> spinup delay -> push

@@ -9,7 +9,7 @@ public class SubsystemUpdateAction implements Action {
 
     private final DrumIndexer indexer;
     private final IntakeControl intake;
-    private final SensorDisplay sensorDisplay;
+    private final Sensors sensorDisplay;
     private final LauncherControl launcher;
     private final MecanumDrive drive;
 
@@ -18,7 +18,7 @@ public class SubsystemUpdateAction implements Action {
 
     public SubsystemUpdateAction(DrumIndexer indexer,
                                  IntakeControl intake,
-                                 SensorDisplay sensorDisplay,
+                                 Sensors sensorDisplay,
                                  LauncherControl launcher,
                                  MecanumDrive drive) {
         this.indexer = indexer;
@@ -33,8 +33,7 @@ public class SubsystemUpdateAction implements Action {
     public boolean run(@NonNull TelemetryPacket packet) {
 
         // Always service subsystems
-        indexer.update(sensorDisplay);
-        indexer.updatePush();
+        indexer.update();
         if (intake != null) intake.update(sensorDisplay);
         Parameters.startPose = drive.localizer.getPose();
 
@@ -43,24 +42,23 @@ public class SubsystemUpdateAction implements Action {
 
             if (indexer.DrumAtTarget() && Parameters.drum_in_out == 1) {
 
-                if (sensorDisplay.GetDetectedDistance() < BALL_DETECT_MM) {
+                if (sensorDisplay.GetDetectedPocketDistance() < BALL_DETECT_MM) {
 
                     int currentPocket = Parameters.pocketTarget;
-                    switch (currentPocket) {
-                        case 1:
-                            indexer.setAlignment(DrumIndexer.Pocket.TWO, DrumIndexer.Port.IN);
+                    switch (currentPocket){
+
+                        case 0:
+                            indexer.SetDrumPosition(2);
                             break;
 
                         case 2:
-                            indexer.setAlignment(DrumIndexer.Pocket.THREE, DrumIndexer.Port.IN);
+                            indexer.SetDrumPosition(4);
                             break;
 
-                        case 3:
-                            indexer.setAlignment(DrumIndexer.Pocket.ONE, DrumIndexer.Port.OUT);
-                            packet.put("launching", BlueFarParameters.launching);
-                            double x = drive.localizer.getPose().position.x;
-                            if (x > 30) {launcher.setRPM(Parameters.farRPM);}
-                            else         {launcher.setRPM(Parameters.closeRPM);}
+                        case 4:
+                            indexer.SetDrumPosition(5);
+                            Parameters.launcherOn = true;
+                            Parameters.drum_in_out = 0;
                             break;
                     }
                 }

@@ -35,11 +35,9 @@ public class IntakeControl {
     }
 
     // Update method: Call in main OpMode loop (non-blocking)
-    public void update(SensorDisplay sensorDisplay) {
+    public void update(Sensors sensorDisplay) {
         double distanceInches = intakeSensor.getDistance(DistanceUnit.INCH);
-
-
-        if ((distanceInches < DETECTION_THRESHOLD_INCHES && Parameters.drum_in_out == 1 )|| Parameters.intakeManual == 1 || (sensorDisplay.GetDetectedDistance() < 110 && Parameters.drum_in_out == 1)) {
+        if ((distanceInches < DETECTION_THRESHOLD_INCHES && Parameters.drum_in_out == 1 ) || Parameters.intakeManual == 1) {
             // Object detected: Start/keep running and reset timer
             intakeRunning = true;
             lastDetectionTime = System.currentTimeMillis();
@@ -80,7 +78,7 @@ public class IntakeControl {
     }
 
     // Optional: Get current distance for telemetry
-    public double getDistanceInches() {
+    public double getIntakeDistanceInches() {
         return intakeSensor.getDistance(DistanceUnit.INCH);
     }
 }

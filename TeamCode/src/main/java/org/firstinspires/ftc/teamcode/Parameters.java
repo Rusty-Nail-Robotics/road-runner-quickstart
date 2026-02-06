@@ -6,7 +6,8 @@ import com.acmerobotics.roadrunner.Pose2d;
 @Config
 public class Parameters {
     public static Pose2d startPose = new Pose2d(-60, -52, Math.toRadians(225));
-
+    public static boolean telemetryOutput = true; //TODO: Set to False for Competition
+    public static boolean coldStart = true; //TODO: Set to False for Competition
     public static double drumP = 0.004;
     public static double drumI = 0.0;
     public static double drumD = 0.0000;
@@ -26,5 +27,8 @@ public class Parameters {
     public static int drum_in_out = 1;
     public static int correction = 0;
     public static int intakeManual = 0;
+
+    public static boolean launcherOn = false;
+    public static boolean launcherHigh = false;
 
 }

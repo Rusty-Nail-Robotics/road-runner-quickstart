@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class DrumIndexer {
     //UltraPlanetary 1:1 == 28 cpr, Worm == 28:1,  Total CPR ==784, half rot == 392
@@ -26,7 +29,9 @@ public class DrumIndexer {
     public Servo outBlock;
     private Servo inBlock;
     private PIDFController drumPIDF;
-    private int targetPosition = 0;
+
+    private LinearOpMode opMode;
+    public int targetPosition = 0;
     private int drumTargetTolerance = 25;
     private int drumTargetVelocityTolerance = 100;
 
@@ -47,8 +52,9 @@ public class DrumIndexer {
         outBlock = hardwareMap.get(Servo.class, "outBlock");
         inBlock = hardwareMap.get(Servo.class, "inBlock");
 
+
         drum.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        drum.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(Parameters.coldStart){drum.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
         drum.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // needed for velocity readout
 
         // Initialize PIDF with your values
@@ -85,6 +91,9 @@ public class DrumIndexer {
         targetPosition = pocketLocationArray[drumPocketTarget];
 
     }
+
+
+
 
     public void DrumMove(int pocketsToMove){
         int steps = Math.abs(pocketsToMove);

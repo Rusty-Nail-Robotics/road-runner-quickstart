@@ -30,6 +30,19 @@ public class LauncherControl {
         launcherLeft.setDirection(DcMotor.Direction.REVERSE);
     }
 
+    public void Update(MecanumDrive drive){
+        if(Parameters.launcherOn){
+            if (Parameters.launcherHigh){setRPM(Parameters.farRPM);}
+            else{setRPM(Parameters.closeRPM);}
+            //double currentLocationX = drive.localizer.getPose().position.x;
+            // if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
+            // if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
+        }else{
+            setRPM(0);
+        }
+    }
+
+
     // Set RPM for both motors (0 to turn off)
     public void setRPM(double rpm) {
         double ticksPerSec = (rpm / 60.0) * TICKS_PER_REV; // Convert RPM to ticks/sec
