@@ -24,7 +24,7 @@ public class Sensors {
         double distance = distanceSensor.getDistance(DistanceUnit.MM);
         double distance2 = distanceSensor2.getDistance(DistanceUnit.MM);
 
-        return Math.min(distance, distance2);
+        return Math.max(distance, distance2);
     }
 
     public void displayData(Telemetry telemetry) {

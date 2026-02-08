@@ -14,6 +14,10 @@ public class DriverControl extends LinearOpMode {
     private IntakeControl intakeControl;
     private DriverMecanum driveControl;
     private MecanumDrive drive;
+    private ElapsedTime launchDelay;
+    private boolean leftBumperLastState = false;
+    private boolean rightBumperLastState = false;
+    private boolean xLastState = false;
 
     Pose2d beginPose = Parameters.startPose;
     Pose2d currentPose = new Pose2d(0,0,0);
@@ -29,6 +33,9 @@ public class DriverControl extends LinearOpMode {
         launcherControl = new LauncherControl(hardwareMap);
         intakeControl = new IntakeControl(hardwareMap);
         driveControl = new DriverMecanum(hardwareMap);
+        launchDelay = new ElapsedTime();
+        if(!Parameters.coldStart){indexer.SetDrumOffset(Parameters.drumLastPosition);}
+
 
 
 
@@ -43,43 +50,54 @@ public class DriverControl extends LinearOpMode {
                 waitForStart();
 
         while (opModeIsActive()) {
-
+            Parameters.launcherHigh = true;
+            if(gamepad1.y){
+                indexer.SetDrumPosition(0);
+                if(gamepad1.left_bumper && !leftBumperLastState){
+                    indexer.SetDrumOffset(5);
+                    leftBumperLastState = true;
+                }else if(!gamepad1.left_bumper){
+                    leftBumperLastState = false;
+                }
+                if(gamepad1.right_bumper && !rightBumperLastState){
+                    indexer.SetDrumOffset(-5);
+                    rightBumperLastState = true;
+                }else if (!gamepad1.right_bumper){
+                    rightBumperLastState = false;
+                }
+            }
 
 
              if (gamepad1.left_bumper) {
-               ;
-             } else
-                if (gamepad1.x) {
-                indexer.startPush(); // Single push test
-            }
-            if(gamepad1.start){launcherOn = 1;}//launcherControl.setRPM(Parameters.farRPM);}
-            if(gamepad1.back){launcherOn = 0;}//launcherControl.setRPM(0);}
+               RapidFire();
+             }
+            if(gamepad1.start){Parameters.launcherOn  = true;}
+            if(gamepad1.back){Parameters.launcherOn = false;}//launcherControl.setRPM(0);}
 
             if(gamepad1.b){intakeControl.startReverse();}//test git
 
 
 
-            if(launcherOn == 1){
-                double currentLocationX = drive.localizer.getPose().position.x;
-                if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
-                if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
-            }else{
-                launcherControl.setRPM(0);
-            }
-            // Update PIDF and push in loop (non-blocking)
+
+
             UpdateSystems();
             intakeMode();
 
+            if(Parameters.telemetryOutput) {
+                telemetry.addData("Indexer Target Pocket", indexer.targetPocket + "," + Parameters.drum_in_out);
+                telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
+                telemetry.addData("Target Position", indexer.targetPosition);
+                telemetry.addData("Current Position", indexer.GetDrumPosition());
+                telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
+                telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
+                telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
+                telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());
+                telemetry.addData("right RPM = ", launcherControl.launcherRight.getVelocity());
+                telemetry.addData("right Power = ", launcherControl.launcherRight.getPower());
 
-            telemetry.addData("Indexer Target Pocket", Parameters.pocketTarget + "," + Parameters.drum_in_out);
-            telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
-            telemetry.addData("Target Position", indexer.targetPocket);
-            telemetry.addData("Current Position", indexer.GetDrumPosition());
-            telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
-            telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
 
-
-            telemetry.update();
+                telemetry.update();
+            }
         }
     }
 
@@ -90,7 +108,7 @@ public class DriverControl extends LinearOpMode {
             if(Parameters.drum_in_out == 1){
 
                 if (pocketSensors.GetDetectedPocketDistance() < 70) {
-                    int currentPocket = Parameters.pocketTarget;
+                    int currentPocket = indexer.targetPocket;
                     switch (currentPocket){
 
                         case 0:
@@ -105,7 +123,9 @@ public class DriverControl extends LinearOpMode {
                             indexer.SetDrumPosition(5);
                             //launcherOn = 1;
                             //launcherControl.setRPM(Parameters.farRPM);
-                            intakeControl.startReverse();
+                            //intakeControl.startReverse();
+
+                            RapidFire();
                             break;
 
                     }
@@ -113,7 +133,13 @@ public class DriverControl extends LinearOpMode {
     }
 
     private void RapidFire(){
+        intakeControl.StopIntake();
             Parameters.launcherOn = true;
+            indexer.outBlock.setPosition(0);
+            launchDelay.reset();
+            while(launchDelay.milliseconds() < Parameters.launchDelayMS){
+                UpdateSystems();
+            }
             alignAndPush(5);
             alignAndPush(3);
             alignAndPush(1);
@@ -163,5 +189,23 @@ public class DriverControl extends LinearOpMode {
         driveControl.update(gamepad1);
         drive.updatePoseEstimate();
         launcherControl.Update(drive);
+        Unjam();
+
+    }
+
+    private void Unjam(){
+        if(gamepad1.x && !xLastState){
+            Parameters.launcherOn = false;
+            indexer.ClearJam();
+            xLastState = true;
+        }else if(!gamepad1.x && xLastState){
+            xLastState = false;
+
+        }
+        if(gamepad1.right_bumper){
+            Parameters.launcherOn = false;
+            indexer.SetDrumPosition(0);
+            Parameters.drum_in_out = 1;
+        }
     }
 }

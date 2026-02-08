@@ -16,7 +16,7 @@ public class BlueNearAuto extends LinearOpMode {
     private LauncherControl launcherControl;
     private MecanumDrive drive;
     private IntakeControl intakeControl;
-    private SensorDisplay sensorDisplay;
+    private Sensors sensorDisplay;
 
     @Override
     public void runOpMode() {
@@ -25,10 +25,12 @@ public class BlueNearAuto extends LinearOpMode {
 
         // Initialize hardware
         drive = new MecanumDrive(hardwareMap, BlueNearParameters.startPose);
-        indexer = new DrumIndexer(hardwareMap);
+        indexer = new DrumIndexer();
+        indexer.DrumIndexerInit(hardwareMap);
         launcherControl = new LauncherControl(hardwareMap);
         intakeControl = new IntakeControl(hardwareMap);
-        sensorDisplay = new SensorDisplay(hardwareMap);
+        sensorDisplay = new Sensors();
+        sensorDisplay.SensorsINIT(hardwareMap);
 
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
@@ -66,8 +68,8 @@ public class BlueNearAuto extends LinearOpMode {
 
         // Keep updating until opmode stops
         while (opModeIsActive()) {
-            indexer.update(sensorDisplay);
-            indexer.updatePush();
+            indexer.update();
+
             drive.updatePoseEstimate();
             Parameters.startPose = drive.localizer.getPose();
             intakeControl.update(sensorDisplay);
