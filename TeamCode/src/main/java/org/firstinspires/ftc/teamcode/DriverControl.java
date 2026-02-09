@@ -15,6 +15,7 @@ public class DriverControl extends LinearOpMode {
     private DriverMecanum driveControl;
     private MecanumDrive drive;
     private ElapsedTime launchDelay;
+    private ElapsedTime telemetryTimer;
     private boolean leftBumperLastState = false;
     private boolean rightBumperLastState = false;
     private boolean xLastState = false;
@@ -34,6 +35,7 @@ public class DriverControl extends LinearOpMode {
         intakeControl = new IntakeControl(hardwareMap);
         driveControl = new DriverMecanum(hardwareMap);
         launchDelay = new ElapsedTime();
+        telemetryTimer = new ElapsedTime();
         if(!Parameters.coldStart){indexer.SetDrumOffset(Parameters.drumLastPosition);}
 
 
@@ -50,7 +52,22 @@ public class DriverControl extends LinearOpMode {
                 waitForStart();
 
         while (opModeIsActive()) {
-            Parameters.launcherHigh = true;
+            if(gamepad1.x && !xLastState) {
+                if(Parameters.launcherHigh){
+                    Parameters.launcherHigh = false;
+                    launcherControl.highLowIndicator1R.setState(true);
+                    launcherControl.highLowIndicator1G.setState(false);
+                }else{
+                    Parameters.launcherHigh = true;
+                    launcherControl.highLowIndicator1R.setState(false);
+                    launcherControl.highLowIndicator1G.setState(true);
+                }
+                xLastState = true;
+            }else if(!gamepad1.x){
+                xLastState = false;
+            }
+
+
             if(gamepad1.y){
                 indexer.SetDrumPosition(0);
                 if(gamepad1.left_bumper && !leftBumperLastState){
@@ -83,21 +100,7 @@ public class DriverControl extends LinearOpMode {
             UpdateSystems();
             intakeMode();
 
-            if(Parameters.telemetryOutput) {
-                telemetry.addData("Indexer Target Pocket", indexer.targetPocket + "," + Parameters.drum_in_out);
-                telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
-                telemetry.addData("Target Position", indexer.targetPosition);
-                telemetry.addData("Current Position", indexer.GetDrumPosition());
-                telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
-                telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
-                telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
-                telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());
-                telemetry.addData("right RPM = ", launcherControl.launcherRight.getVelocity());
-                telemetry.addData("right Power = ", launcherControl.launcherRight.getPower());
 
-
-                telemetry.update();
-            }
         }
     }
 
@@ -125,7 +128,7 @@ public class DriverControl extends LinearOpMode {
                             //launcherControl.setRPM(Parameters.farRPM);
                             //intakeControl.startReverse();
 
-                            RapidFire();
+                            //RapidFire();
                             break;
 
                     }
@@ -159,12 +162,7 @@ public class DriverControl extends LinearOpMode {
         alignTimer.reset();
         while (opModeIsActive() && alignTimer.milliseconds() < 3000) { // 2s timeout for alignment (tune)
             UpdateSystems();
-            if(Parameters.telemetryOutput) {
-                telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
-                telemetry.addData("Target Position", indexer.targetPosition);
-                telemetry.addData("Current Position", indexer.GetDrumPosition());
-                telemetry.update();
-            }
+
             if (indexer.DrumAtTarget()) { // Settled
                 indexer.startPush();
 
@@ -177,19 +175,17 @@ public class DriverControl extends LinearOpMode {
             }
         }
 
-        if (alignTimer.milliseconds() >= 3000) {
-            telemetry.log().add("Alignment timeout - Check PID/encoder/mechanics");
-        }
+
     }
 
     private void UpdateSystems(){
         indexer.update();
-        pocketSensors.displayData(telemetry);
+        TelemetryOutput();
         intakeControl.update(pocketSensors);
         driveControl.update(gamepad1);
         drive.updatePoseEstimate();
         launcherControl.Update(drive);
-        Unjam();
+        //Unjam();
 
     }
 
@@ -206,6 +202,29 @@ public class DriverControl extends LinearOpMode {
             Parameters.launcherOn = false;
             indexer.SetDrumPosition(0);
             Parameters.drum_in_out = 1;
+        }
+    }
+
+    private void TelemetryOutput(){
+        if(Parameters.telemetryOutput) {
+            if (telemetryTimer.milliseconds() > Parameters.telemetryIntervalMs) {
+                pocketSensors.displayData(telemetry);
+                telemetry.addData("Indexer Target Pocket", indexer.targetPocket + "," + Parameters.drum_in_out);
+                telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
+                telemetry.addData("Target Position", indexer.targetPosition);
+                telemetry.addData("Current Position", indexer.GetDrumPosition());
+                telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
+                telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
+                telemetry.addData("target velocity = ", LauncherControl.ticksPerSec);
+                telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
+                telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());
+                telemetry.addData("right RPM = ", launcherControl.launcherRight.getVelocity());
+                telemetry.addData("right Power = ", launcherControl.launcherRight.getPower());
+
+
+                telemetry.update();
+                telemetryTimer.reset();
+            }
         }
     }
 }

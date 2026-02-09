@@ -10,7 +10,7 @@ public class IntakeControl {
 
     // Tunable constants
     private static final double DETECTION_THRESHOLD_INCHES = 9.0; // Distance to start intake (tune as needed)
-    private static final long RUN_AFTER_LOSS_MS = 3000; // 8 seconds run after detection lost (tune)
+    private static final long RUN_AFTER_LOSS_MS = 8000; // 8 seconds run after detection lost (tune)
     private static final long REVERSE_DURATION_MS = 3000; // 3 seconds reverse to spit out (tune)
     private static final double INTAKE_POWER = -1.0; // Forward power (0-1.0; tune for speed)
     private static final double REVERSE_POWER = 1.0; // Reverse power (negative; tune)

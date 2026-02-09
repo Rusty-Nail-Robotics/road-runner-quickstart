@@ -69,7 +69,7 @@ public class DrumIndexer {
 
     public void update() {
         Parameters.drumLastPosition = GetDrumPosition();
-        targetPosition = pocketLocationArray[targetPocket];
+       // targetPosition = pocketLocationArray[targetPocket];
         //if(!drumPIDF.atSetPoint()) {
         drumPIDF.SetPIDCoeficients(Parameters.drumP, Parameters.drumI, Parameters.drumD);
             double currentPosition = GetDrumPosition();

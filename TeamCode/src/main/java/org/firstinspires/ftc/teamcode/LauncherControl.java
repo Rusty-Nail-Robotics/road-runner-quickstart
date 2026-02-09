@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 @Config
 public class LauncherControl {
@@ -13,13 +14,19 @@ public class LauncherControl {
     public DcMotorEx launcherLeft;
 
     public DcMotorEx launcherRight;
+    public DigitalChannel highLowIndicator1R;
+    public DigitalChannel highLowIndicator1G;
 
-public static double ticksPerSec = 0;
+    public static double ticksPerSec = 0;
 
     // Constructor: Initialize with HardwareMap
     public LauncherControl(HardwareMap hardwareMap) {
         launcherLeft = hardwareMap.get(DcMotorEx.class, "launcherLeft");
         launcherRight = hardwareMap.get(DcMotorEx.class, "launcherRight");
+        highLowIndicator1R = hardwareMap.get(DigitalChannel.class, "lowHigh1R");
+        highLowIndicator1G = hardwareMap.get(DigitalChannel.class, "lowHigh1G");
+        highLowIndicator1R.setMode(DigitalChannel.Mode.OUTPUT);
+        highLowIndicator1G.setMode(DigitalChannel.Mode.OUTPUT);
 
         // Configure motors for velocity control
         launcherLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -38,8 +45,17 @@ public static double ticksPerSec = 0;
     public void Update(MecanumDrive drive){
         if(Parameters.launcherOn){
 
-            if (Parameters.launcherHigh){setRPM(Parameters.farRPM);}
-            else{setRPM(Parameters.closeRPM);}
+            if (Parameters.launcherHigh){
+                setRPM(Parameters.farRPM);
+                highLowIndicator1R.setState(false);
+                highLowIndicator1G.setState(true);
+            }
+            else{
+                setRPM(Parameters.closeRPM);
+                highLowIndicator1R.setState(true);
+                highLowIndicator1G.setState(false);
+
+            }
 
             //double currentLocationX = drive.localizer.getPose().position.x;
             // if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
