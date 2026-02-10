@@ -108,6 +108,7 @@ public class DriverControl extends LinearOpMode {
 
     private void intakeMode(){
         if(indexer.DrumAtTarget()) {
+            indexer.inBlock.setPosition(0);
             if(Parameters.drum_in_out == 1){
 
                 if (pocketSensors.GetDetectedPocketDistance() < 70) {
@@ -115,14 +116,17 @@ public class DriverControl extends LinearOpMode {
                     switch (currentPocket){
 
                         case 0:
+                            indexer.inBlock.setPosition(1);
                             indexer.SetDrumPosition(2);
                             break;
 
                         case 2:
+                            indexer.inBlock.setPosition(1);
                             indexer.SetDrumPosition(4);
                             break;
 
                         case 4:
+                            indexer.inBlock.setPosition(1);
                             indexer.SetDrumPosition(5);
                             //launcherOn = 1;
                             //launcherControl.setRPM(Parameters.farRPM);
@@ -150,6 +154,7 @@ public class DriverControl extends LinearOpMode {
             Parameters.drum_in_out = 1;
             indexer.outBlock.setPosition(1);
             Parameters.launcherOn = false;
+            indexer.inBlock.setPosition(0);
         }
 
 
@@ -209,17 +214,19 @@ public class DriverControl extends LinearOpMode {
         if(Parameters.telemetryOutput) {
             if (telemetryTimer.milliseconds() > Parameters.telemetryIntervalMs) {
                 pocketSensors.displayData(telemetry);
-                telemetry.addData("Indexer Target Pocket", indexer.targetPocket + "," + Parameters.drum_in_out);
+                telemetry.addData("Indexer Target Pocket", indexer.targetPocket);
                 telemetry.addData("Indexer At Target = ", indexer.DrumAtTarget() ? "yes" : "no");
+                telemetry.addLine("_______________________");
                 telemetry.addData("Target Position", indexer.targetPosition);
                 telemetry.addData("Current Position", indexer.GetDrumPosition());
-                telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
+                telemetry.addData("drum Error = ", indexer.targetPosition-indexer.GetDrumPosition());
+               // telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
                 telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
-                telemetry.addData("target velocity = ", LauncherControl.ticksPerSec);
-                telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
-                telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());
-                telemetry.addData("right RPM = ", launcherControl.launcherRight.getVelocity());
-                telemetry.addData("right Power = ", launcherControl.launcherRight.getPower());
+              //  telemetry.addData("target velocity = ", LauncherControl.ticksPerSec);
+               // telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
+                //telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());
+                //telemetry.addData("right RPM = ", launcherControl.launcherRight.getVelocity());
+                //telemetry.addData("right Power = ", launcherControl.launcherRight.getPower());
 
 
                 telemetry.update();

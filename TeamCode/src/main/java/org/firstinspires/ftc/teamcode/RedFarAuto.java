@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name = "Blue Far Auto", group = "Autonomous")
+@Autonomous(name = "Red Wall Auto", group = "Autonomous")
 public class RedFarAuto extends LinearOpMode {
 
     private DrumIndexer indexer;
@@ -43,7 +43,7 @@ public class RedFarAuto extends LinearOpMode {
         Action main = drive.actionBuilder(RedFarParameters.startPose)
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedFarParameters.launchRPM))
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
                 .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(270))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
@@ -53,7 +53,7 @@ public class RedFarAuto extends LinearOpMode {
                 // New: Return to launch and fire again
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer, launcherControl, drive, RedFarParameters.launchRPM))  // Second launch cycle
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
                 .build();
 
         Actions.runBlocking(

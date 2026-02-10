@@ -23,7 +23,7 @@ public class DrumIndexer {
     private DcMotorEx drum;
     private Servo pusher; // Optional, if needed for pushing
     public Servo outBlock;
-    private Servo inBlock;
+    public Servo inBlock;
     //public PIDFController drumPIDF;
     public PIDcontrol drumPIDF;
 
@@ -64,7 +64,7 @@ public class DrumIndexer {
 
         pusher.setPosition(0.0); // Retracted position
         outBlock.setPosition(1);
-        inBlock.setPosition(0.0); // Assume 0.0 is open (allow intake); tune if reversed
+        inBlock.setPosition(0); // Assume 0.0 is open (allow intake); tune if reversed
     }
 
     public void update() {

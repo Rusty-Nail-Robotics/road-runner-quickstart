@@ -34,17 +34,27 @@ public class SubsystemUpdateAction implements Action {
 
         // Always service subsystems
         indexer.update();
-        if (intake != null) intake.update(sensorDisplay);
-        Parameters.startPose = drive.localizer.getPose();
+        launcher.Update(drive);
+        intake.update(sensorDisplay);
+
 
         // DO NOT auto-index off the distance sensor while launching
-        if (!BlueFarParameters.launching && BlueFarParameters.autoIndexEnabled) {
+        if (Parameters.autoIndexEnabled) {
+            indexer.inBlock.setPosition(0);
+                intakeMode();
+                }else{indexer.inBlock.setPosition(1);}
 
-            if (indexer.DrumAtTarget() && Parameters.drum_in_out == 1) {
 
-                if (sensorDisplay.GetDetectedPocketDistance() < BALL_DETECT_MM) {
 
-                    int currentPocket = Parameters.pocketTarget;
+
+        return true;
+    }
+    private void intakeMode(){
+        if(indexer.DrumAtTarget()) {
+            if(Parameters.drum_in_out == 1){
+
+                if (sensorDisplay.GetDetectedPocketDistance() < 70) {
+                    int currentPocket = indexer.targetPocket;
                     switch (currentPocket){
 
                         case 0:
@@ -57,15 +67,15 @@ public class SubsystemUpdateAction implements Action {
 
                         case 4:
                             indexer.SetDrumPosition(5);
-                            Parameters.launcherOn = true;
-                            Parameters.drum_in_out = 0;
+                            Parameters.autoIndexEnabled = false;
+                            //launcherOn = 1;
+                            //launcherControl.setRPM(Parameters.farRPM);
+                            //intakeControl.startReverse();
+
+                            //RapidFire();
                             break;
+
                     }
-                }
-            }
-        }
-
-
-        return true;
+                }}}
     }
 }

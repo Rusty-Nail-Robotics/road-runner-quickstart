@@ -13,7 +13,7 @@ public class RedFarParameters {
     public static Pose2d startPose = new Pose2d(68, 24, Math.toRadians(180));
 
     //FIRST LAUNCH LOCATION
-    public static Vector2d launchLocation = new Vector2d(60,0);
+    public static Vector2d launchLocation = new Vector2d(60,20);
     public static double launchHeading = 10;
     public static double launchRPM = Parameters.farRPM;
 

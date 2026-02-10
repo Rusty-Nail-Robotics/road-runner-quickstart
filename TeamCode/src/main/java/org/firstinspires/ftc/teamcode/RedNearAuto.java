@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name = "Blue Near Auto", group = "Autonomous")
+@Autonomous(name = "Red Basket Auto", group = "Autonomous")
 public class RedNearAuto extends LinearOpMode {
 
     private DrumIndexer indexer;
@@ -42,7 +42,7 @@ public class RedNearAuto extends LinearOpMode {
         Action main = drive.actionBuilder(RedNearParameters.startPose)
                 .strafeTo(RedNearParameters.launchLocation)
                 .turnTo(Math.toRadians(RedNearParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedNearParameters.launchRPM))
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
                 .turnTo(Math.toRadians(270))
                 .splineToSplineHeading(RedNearParameters.firstGrab,Math.toRadians(280))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
@@ -53,7 +53,7 @@ public class RedNearAuto extends LinearOpMode {
                 // New: Return to launch and fire again
                 .strafeTo(RedNearParameters.launchLocation)
                 .turnTo(Math.toRadians(RedNearParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer, launcherControl, drive, RedNearParameters.launchRPM))  // Second launch cycle
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
                 .build();
 
         Actions.runBlocking(

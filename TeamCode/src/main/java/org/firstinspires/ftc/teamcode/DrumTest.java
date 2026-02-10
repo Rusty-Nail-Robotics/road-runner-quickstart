@@ -71,8 +71,8 @@ public class DrumTest extends LinearOpMode {
                 indexer.SetDrumPosition(Parameters.drumtesttarget);
 
 
-            while(gamepad1.a && opModeIsActive()){
-                if(timer.seconds() > 5){
+            while(!gamepad1.a && opModeIsActive()){
+                if(timer.seconds() > 3){
                     int currentPocket = indexer.targetPocket;
                     switch (currentPocket) {
                         case 0:

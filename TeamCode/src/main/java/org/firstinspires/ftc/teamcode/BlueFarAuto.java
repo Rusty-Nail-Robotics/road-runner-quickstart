@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name = "Blue Far Auto", group = "Autonomous")
+@Autonomous(name = "Blue Wall Auto", group = "Autonomous")
 public class BlueFarAuto extends LinearOpMode {
 
     private DrumIndexer indexer;
@@ -23,7 +23,7 @@ public class BlueFarAuto extends LinearOpMode {
     public void runOpMode() {
         // Starting pose
 
-
+        Parameters.coldStart = true;
         // Initialize hardware
         drive = new MecanumDrive(hardwareMap, BlueFarParameters.startPose);
         indexer = new DrumIndexer();
@@ -32,9 +32,11 @@ public class BlueFarAuto extends LinearOpMode {
         intakeControl = new IntakeControl(hardwareMap);
         sensorDisplay = new Sensors();
         sensorDisplay.SensorsINIT(hardwareMap);
-
+        Parameters.launcherHigh = true;
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
+        Parameters.coldStart = false;
+        indexer.inBlock.setPosition(1);
 
         waitForStart();
 
@@ -43,7 +45,7 @@ public class BlueFarAuto extends LinearOpMode {
         Action main = drive.actionBuilder(BlueFarParameters.startPose)
                 .strafeTo(BlueFarParameters.launchLocation)
                 .turnTo(Math.toRadians(BlueFarParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM))
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
                 .splineToSplineHeading(BlueFarParameters.firstGrab,Math.toRadians(270))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
@@ -53,7 +55,7 @@ public class BlueFarAuto extends LinearOpMode {
                 // New: Return to launch and fire again
                 .strafeTo(BlueFarParameters.launchLocation)
                 .turnTo(Math.toRadians(BlueFarParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer, launcherControl, drive, BlueFarParameters.launchRPM))  // Second launch cycle
+                .stopAndAdd(new LaunchCycleAction(indexer, launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
                 .build();
 
         Actions.runBlocking(

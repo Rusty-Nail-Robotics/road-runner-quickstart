@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class LaunchCycleAction implements Action {
@@ -11,9 +13,14 @@ public class LaunchCycleAction implements Action {
     private final DrumIndexer indexer;
     private final LauncherControl launcher;
     private final MecanumDrive drive;
+    private final LinearOpMode opMode;
+    private final IntakeControl intakeControl;
+    private final Sensors pocketSensors;
     private double launchRPM;
+    private ElapsedTime launchDelay;
 
-    private int step = 0;
+
+    private int step = 1;
     private boolean started = false;
 
     private final ElapsedTime timer = new ElapsedTime();
@@ -28,11 +35,15 @@ public class LaunchCycleAction implements Action {
 
     public LaunchCycleAction(DrumIndexer indexer,
                              LauncherControl launcher,
-                             MecanumDrive drive, double launchRPM) {
+                             MecanumDrive drive, double launchRPM, LinearOpMode opMode, IntakeControl intakeControl, Sensors pocketSensors) {
         this.indexer = indexer;
         this.launcher = launcher;
         this.drive = drive;
         this.launchRPM = launchRPM;
+        this.opMode = opMode;
+        launchDelay = new ElapsedTime();
+        this.intakeControl = intakeControl;
+        this.pocketSensors = pocketSensors;
     }
 
     @Override
@@ -40,131 +51,89 @@ public class LaunchCycleAction implements Action {
 
         if (!started) {
             started = true;
-            BlueFarParameters.launching = true; // LOCKOUT ON
-
-            // RPM selection (adjust sign based on your field coords)
-            launcher.setRPM(launchRPM);
-
-            // Start with pocket ONE alignment
-            startAlign(5);
+            launchDelay.reset();
         }
-
-        if(Parameters.telemetryOutput) {
-            packet.put("launchStep", step);
-            packet.put("launchPhase", phase.toString());
-            packet.put("launching", BlueFarParameters.launching);
-        }
+        UpdateSystems();
         switch (step) {
-            case 0: // Pocket ONE OUT
-                if (runAlignSpinupAndPush()) {
-                    step++;
-                    startAlign(5);
+            case 1:
+                intakeControl.StopIntake();
+                Parameters.launcherOn = true;
+                indexer.outBlock.setPosition(0);
+                if (launchDelay.milliseconds() > Parameters.launchDelayMS) {
+                    step = step + 1;
                 }
-                return true;
+                started = true;
+                break;
+            case 2:
+                alignAndPush(5);
+                started = true;
+                step = step + 1;
+                break;
+            case 3:
+                alignAndPush(3);
+                started = true;
+                step = step + 1;
+                break;
+            case 4:
+                alignAndPush(1);
+                started = true;
+                step = step + 1;
+                break;
 
-            case 1: // Pocket TWO OUT
-                if (runAlignAndPush()) {
-                    step++;
-                    startAlign(3);
+            case 5:
+                indexer.SetDrumPosition(0);
+                Parameters.drum_in_out = 1;
+                indexer.outBlock.setPosition(1);
+                Parameters.launcherOn = false;
+                Parameters.autoIndexEnabled = true;
+                started = false;
+                step = 1;
+                break;
+
+        }
+
+        return started;
+
+
+    }
+
+
+
+
+    // Helper for rapid sequence (waits for push complete before next index)
+    private void alignAndPush(int pocketPosition) {
+        indexer.outBlock.setPosition(0);
+        indexer.SetDrumPosition(pocketPosition);
+
+        ElapsedTime alignTimer = new ElapsedTime();
+        alignTimer.reset();
+        while (opMode.opModeIsActive() && alignTimer.milliseconds() < 3000) { // 2s timeout for alignment (tune)
+            UpdateSystems();
+
+            if (indexer.DrumAtTarget()) { // Settled
+                indexer.startPush();
+
+                ElapsedTime pushTimer = new ElapsedTime();
+                pushTimer.reset();
+                while (opMode.opModeIsActive() && !indexer.isPushComplete() && pushTimer.milliseconds() < 2000) { // 1s timeout for push (tune)
+                    UpdateSystems();
+
                 }
-                return true;
-
-            case 2: // Pocket THREE OUT
-                if (runAlignAndPush()) {
-                    // Reset to pocket ONE IN
-                    indexer.SetDrumPosition(0);
-
-                    // Stop launcher
-                    launcher.setRPM(0);
-
-                    BlueFarParameters.launching = false; // LOCKOUT OFF
-                    step++;
-                }
-                return true;
-
-            default:
-                // Finished
-                BlueFarParameters.launching = false;
-                return false;
+                indexer.outBlock.setPosition(1);
+                break;
+            }
         }
+
     }
 
-    private void startAlign(int pocket) {
-        phase = Phase.ALIGNING;
-        timer.reset();
-        indexer.SetDrumPosition(pocket);
-    }
+        private void UpdateSystems(){
+            indexer.update();
+            //TelemetryOutput();
+            intakeControl.update(pocketSensors);
+            //driveControl.update(gamepad1);
+            //drive.updatePoseEstimate();
+            //launcherControl.Update();
+            //Unjam();
 
-    // For first pocket: align -> spinup delay -> push
-    private boolean runAlignSpinupAndPush() {
-        if (phase == Phase.ALIGNING) {
-            // Alignment timeout safety
-            if (timer.seconds() > ALIGN_TIMEOUT_S) {
-                phase = Phase.SPINUP;
-                timer.reset();
-                return false;
-            }
-
-            if (indexer.DrumAtTarget()) {
-                phase = Phase.SPINUP;
-                timer.reset();
-            }
-            return false;
         }
-
-        if (phase == Phase.SPINUP) {
-            if (timer.seconds() >= SPINUP_DELAY_S) {
-                phase = Phase.PUSHING;
-                timer.reset();
-                indexer.startPush();
-            }
-            return false;
-        }
-
-        // PUSHING phase
-        if (timer.seconds() > PUSH_TIMEOUT_S) {
-            phase = Phase.ALIGNING; // Reset for next pocket
-            return true;
-        }
-
-        if (indexer.isPushComplete()) {
-            phase = Phase.ALIGNING; // Reset for next pocket
-            return true;
-        }
-
-        return false;
-    }
-
-    // For subsequent pockets: align -> push (no spinup)
-    private boolean runAlignAndPush() {
-        if (phase == Phase.ALIGNING) {
-            // Alignment timeout safety
-            if (timer.seconds() > ALIGN_TIMEOUT_S) {
-                phase = Phase.PUSHING;
-                timer.reset();
-                indexer.startPush();
-                return false;
-            }
-
-            if (indexer.DrumAtTarget()) {
-                phase = Phase.PUSHING;
-                timer.reset();
-                indexer.startPush();
-            }
-            return false;
-        }
-
-        // PUSHING phase
-        if (timer.seconds() > PUSH_TIMEOUT_S) {
-            phase = Phase.ALIGNING; // Reset for next pocket
-            return true;
-        }
-
-        if (indexer.isPushComplete()) {
-            phase = Phase.ALIGNING; // Reset for next pocket
-            return true;
-        }
-
-        return false;
-    }
 }

@@ -8,14 +8,14 @@ import com.acmerobotics.roadrunner.Vector2d;
 
 public class BlueFarParameters {
     public static volatile boolean launching = false;
-    public static boolean autoIndexEnabled = false;
+    public static boolean autoIndexEnabled = true;
     //START POSITION
     public static Pose2d startPose = new Pose2d(68, -24, Math.toRadians(180));
 
     //FIRST LAUNCH LOCATION
-    public static Vector2d launchLocation = new Vector2d(60,0);
-    public static double launchHeading = 210;
-    public static double launchRPM = Parameters.farRPM;
+    public static Vector2d launchLocation = new Vector2d(60,-20);
+    public static double launchHeading = 200;
+    public static double launchRPM = 1900;
 
     //FIRST GRAB LOCATION
     public static Pose2d firstGrab = new Pose2d(36, -30, Math.toRadians(270));
