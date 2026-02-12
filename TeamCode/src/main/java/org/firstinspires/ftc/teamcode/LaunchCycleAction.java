@@ -58,6 +58,7 @@ public class LaunchCycleAction implements Action {
             case 1:
                 intakeControl.StopIntake();
                 Parameters.launcherOn = true;
+                launcher.setRPM(launchRPM);
                 indexer.outBlock.setPosition(0);
                 if (launchDelay.milliseconds() > Parameters.launchDelayMS) {
                     step = step + 1;
@@ -86,6 +87,7 @@ public class LaunchCycleAction implements Action {
                 indexer.outBlock.setPosition(1);
                 indexer.inBlock.setPosition(0);
                 Parameters.launcherOn = false;
+                launcher.setRPM(0);
                 Parameters.autoIndexEnabled = true;
                 started = false;
                 step = 1;

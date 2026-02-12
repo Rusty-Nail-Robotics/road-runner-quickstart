@@ -46,8 +46,9 @@ public class BlueFarAuto extends LinearOpMode {
                 .strafeTo(BlueFarParameters.launchLocation)
                 .turnTo(Math.toRadians(BlueFarParameters.launchHeading))
                 .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
-                .splineToSplineHeading(BlueFarParameters.firstGrab,Math.toRadians(270))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
+                .splineToSplineHeading(BlueFarParameters.firstGrab,Math.toRadians(270))
+
                 // New: Slow drive forward for intake (adjust distance/speed)
                                 .lineToY(BlueFarParameters.firstGrab.position.y + BlueFarParameters.intakeForwardDistance,new TranslationalVelConstraint(BlueFarParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
                 )

@@ -25,6 +25,7 @@ public class DrumTest extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Initialize indexer
+        Parameters.coldStart = true;
         drive = new MecanumDrive(hardwareMap, beginPose);
         indexer = new DrumIndexer();
         indexer.DrumIndexerInit(hardwareMap);

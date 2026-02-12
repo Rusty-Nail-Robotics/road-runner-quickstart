@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Driver Control", group = "Test")
-public class DriverControl extends LinearOpMode {
+@TeleOp(name = "Drum Loader", group = "Test")
+public class DrumLoader extends LinearOpMode {
 
     private DrumIndexer indexer;
     private Sensors pocketSensors;
@@ -51,7 +51,7 @@ public class DriverControl extends LinearOpMode {
             telemetry.update();
         }
 
-                waitForStart();
+        waitForStart();
 
         while (opModeIsActive()) {
 
@@ -60,9 +60,6 @@ public class DriverControl extends LinearOpMode {
 
 
 
-             if (gamepad1.left_bumper) {
-               RapidFire();
-             }
             if(gamepad1.start){Parameters.launcherOn  = true;}
             if(gamepad1.back){Parameters.launcherOn = false;}//launcherControl.setRPM(0);}
 
@@ -118,7 +115,7 @@ public class DriverControl extends LinearOpMode {
 
                         case 4:
                             indexer.inBlock.setPosition(1);
-                            indexer.SetDrumPosition(5);
+                            indexer.SetDrumPosition(0);
                             //launcherOn = 1;
                             //launcherControl.setRPM(Parameters.farRPM);
                             //intakeControl.startReverse();
@@ -130,49 +127,11 @@ public class DriverControl extends LinearOpMode {
                 }}}
     }
 
-    private void RapidFire(){
-        intakeControl.StopIntake();
-            Parameters.launcherOn = true;
-            indexer.outBlock.setPosition(0);
-            launchDelay.reset();
-            while(launchDelay.milliseconds() < Parameters.launchDelayMS){
-                UpdateSystems();
-            }
-            alignAndPush(5);
-            alignAndPush(3);
-            alignAndPush(1);
-            indexer.SetDrumPosition(0);
-            Parameters.drum_in_out = 1;
-            indexer.outBlock.setPosition(1);
-            Parameters.launcherOn = false;
-            indexer.inBlock.setPosition(0);
-        }
 
 
 
-    // Helper for rapid sequence (waits for push complete before next index)
-    private void alignAndPush(int pocketPosition) {
-        indexer.SetDrumPosition(pocketPosition);
-
-        ElapsedTime alignTimer = new ElapsedTime();
-        alignTimer.reset();
-        while (opModeIsActive() && alignTimer.milliseconds() < 3000) { // 2s timeout for alignment (tune)
-            UpdateSystems();
-
-            if (indexer.DrumAtTarget()) { // Settled
-                indexer.startPush();
-
-                ElapsedTime pushTimer = new ElapsedTime();
-                pushTimer.reset();
-                while (opModeIsActive() && !indexer.isPushComplete() && pushTimer.milliseconds() < 2000) { // 1s timeout for push (tune)
-                    UpdateSystems();
-                }
-                break;
-            }
-        }
 
 
-    }
 
     private void UpdateSystems(){
         if(!gamepad1.y) {
@@ -229,13 +188,13 @@ public class DriverControl extends LinearOpMode {
                 telemetry.addData("Target Position", indexer.targetPosition);
                 telemetry.addData("Current Position", indexer.GetDrumPosition());
                 telemetry.addData("drum Error = ", indexer.targetPosition-indexer.GetDrumPosition());
-               // telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
+                // telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
                 telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
                 telemetry.addLine("__________________");
                 telemetry.addData("Launcher On = ", Parameters.launcherOn);
                 telemetry.addData("LauncherHigh = ", Parameters.launcherHigh);
-              //  telemetry.addData("target velocity = ", LauncherControl.ticksPerSec);
-               // telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
+                //  telemetry.addData("target velocity = ", LauncherControl.ticksPerSec);
+                // telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
                 //telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());
                 //telemetry.addData("right RPM = ", launcherControl.launcherRight.getVelocity());
                 //telemetry.addData("right Power = ", launcherControl.launcherRight.getPower());

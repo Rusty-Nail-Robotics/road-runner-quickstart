@@ -46,9 +46,10 @@ public class RedFarAuto extends LinearOpMode {
         Action main = drive.actionBuilder(RedFarParameters.startPose)
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
-                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(90))
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedFarParameters.launchRPM, this, intakeControl, sensorDisplay))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
+                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(90))
+
                 // New: Slow drive forward for intake (adjust distance/speed)
                 .lineToY(RedFarParameters.firstGrab.position.y + RedFarParameters.intakeForwardDistance,new TranslationalVelConstraint(RedFarParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
                 )
@@ -56,7 +57,7 @@ public class RedFarAuto extends LinearOpMode {
                 // New: Return to launch and fire again
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
                 .build();
 
         Actions.runBlocking(
