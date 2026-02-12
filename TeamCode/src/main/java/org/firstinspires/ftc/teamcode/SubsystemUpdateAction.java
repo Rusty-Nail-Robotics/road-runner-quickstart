@@ -52,20 +52,23 @@ public class SubsystemUpdateAction implements Action {
     private void intakeMode(){
         if(indexer.DrumAtTarget()) {
             if(Parameters.drum_in_out == 1){
-
+                indexer.inBlock.setPosition(0);
                 if (sensorDisplay.GetDetectedPocketDistance() < 70) {
                     int currentPocket = indexer.targetPocket;
                     switch (currentPocket){
 
                         case 0:
+                            indexer.inBlock.setPosition(1);
                             indexer.SetDrumPosition(2);
                             break;
 
                         case 2:
+                            indexer.inBlock.setPosition(1);
                             indexer.SetDrumPosition(4);
                             break;
 
                         case 4:
+                            indexer.inBlock.setPosition(1);
                             indexer.SetDrumPosition(5);
                             Parameters.autoIndexEnabled = false;
                             //launcherOn = 1;

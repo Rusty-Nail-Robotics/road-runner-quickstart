@@ -25,6 +25,7 @@ public class RedFarAuto extends LinearOpMode {
 
 
         // Initialize hardware
+        Parameters.coldStart = true;
         drive = new MecanumDrive(hardwareMap, RedFarParameters.startPose);
         indexer = new DrumIndexer();
         indexer.DrumIndexerInit(hardwareMap);
@@ -35,6 +36,8 @@ public class RedFarAuto extends LinearOpMode {
 
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
+        Parameters.coldStart = false;
+        indexer.inBlock.setPosition(1);
 
         waitForStart();
 
@@ -44,7 +47,7 @@ public class RedFarAuto extends LinearOpMode {
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
                 .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
-                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(270))
+                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(90))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
                 .lineToY(RedFarParameters.firstGrab.position.y + RedFarParameters.intakeForwardDistance,new TranslationalVelConstraint(RedFarParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)

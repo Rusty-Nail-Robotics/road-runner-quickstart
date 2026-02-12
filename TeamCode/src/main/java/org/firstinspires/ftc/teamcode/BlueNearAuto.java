@@ -24,6 +24,7 @@ public class BlueNearAuto extends LinearOpMode {
 
 
         // Initialize hardware
+        Parameters.coldStart =true;
         drive = new MecanumDrive(hardwareMap, BlueNearParameters.startPose);
         indexer = new DrumIndexer();
         indexer.DrumIndexerInit(hardwareMap);
@@ -34,6 +35,8 @@ public class BlueNearAuto extends LinearOpMode {
 
         telemetry.addLine("Basic Autonomous Ready");
         telemetry.update();
+        Parameters.coldStart = false;
+        indexer.inBlock.setPosition(1);
 
         waitForStart();
 
@@ -42,18 +45,18 @@ public class BlueNearAuto extends LinearOpMode {
         Action main = drive.actionBuilder(BlueNearParameters.startPose)
                 .strafeTo(BlueNearParameters.launchLocation)
                 .turnTo(Math.toRadians(BlueNearParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueNearParameters.launchRPM, this, intakeControl, sensorDisplay))
                 .turnTo(Math.toRadians(270))
                 .splineToSplineHeading(BlueNearParameters.firstGrab,Math.toRadians(280))
                 .stopAndAdd(new SetAutoIndexEnabledAction(true))
                 // New: Slow drive forward for intake (adjust distance/speed)
-                .lineToY(BlueNearParameters.firstGrab.position.y + BlueNearParameters.intakeForwardDistance,new TranslationalVelConstraint(BlueNearParameters.intakeSpeed),new ProfileAccelConstraint(-5,5)
+                .lineToY(BlueNearParameters.firstGrab.position.y + BlueNearParameters.intakeForwardDistance,new TranslationalVelConstraint(BlueNearParameters.intakeSpeed)//,new ProfileAccelConstraint(-5,5)
                 )
                 .stopAndAdd(new SetAutoIndexEnabledAction(false))
                 // New: Return to launch and fire again
                 .strafeTo(BlueNearParameters.launchLocation)
                 .turnTo(Math.toRadians(BlueNearParameters.launchHeading))
-                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
+                .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, BlueNearParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
                 .build();
 
         Actions.runBlocking(

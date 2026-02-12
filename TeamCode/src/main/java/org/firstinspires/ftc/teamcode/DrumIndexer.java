@@ -20,7 +20,7 @@ public class DrumIndexer {
 
 
 
-    private DcMotorEx drum;
+    public DcMotorEx drum;
     private Servo pusher; // Optional, if needed for pushing
     public Servo outBlock;
     public Servo inBlock;
@@ -185,6 +185,9 @@ public class DrumIndexer {
         }
     }
 
+    public void DrumManualControl(OpMode opMode){
+        //
+    }
 
 
 }

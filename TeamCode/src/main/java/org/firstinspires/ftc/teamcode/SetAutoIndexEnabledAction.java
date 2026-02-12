@@ -8,8 +8,10 @@ public class SetAutoIndexEnabledAction implements Action {
     private final boolean enabled;
     private boolean done = false;
 
+
     public SetAutoIndexEnabledAction(boolean enabled) {
         this.enabled = enabled;
+
     }
 
     @Override
@@ -18,6 +20,7 @@ public class SetAutoIndexEnabledAction implements Action {
             BlueFarParameters.autoIndexEnabled = enabled;
             done = true;
         }
+
         return false; // instant
     }
 }

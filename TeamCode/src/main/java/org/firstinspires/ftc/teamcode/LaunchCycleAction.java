@@ -84,6 +84,7 @@ public class LaunchCycleAction implements Action {
                 indexer.SetDrumPosition(0);
                 Parameters.drum_in_out = 1;
                 indexer.outBlock.setPosition(1);
+                indexer.inBlock.setPosition(0);
                 Parameters.launcherOn = false;
                 Parameters.autoIndexEnabled = true;
                 started = false;

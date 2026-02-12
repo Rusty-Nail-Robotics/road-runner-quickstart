@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Driver Control", group = "Test")
@@ -19,6 +20,7 @@ public class DriverControl extends LinearOpMode {
     private boolean leftBumperLastState = false;
     private boolean rightBumperLastState = false;
     private boolean xLastState = false;
+    private boolean yLastState;
 
     Pose2d beginPose = Parameters.startPose;
     Pose2d currentPose = new Pose2d(0,0,0);
@@ -52,20 +54,7 @@ public class DriverControl extends LinearOpMode {
                 waitForStart();
 
         while (opModeIsActive()) {
-            if(gamepad1.x && !xLastState) {
-                if(Parameters.launcherHigh){
-                    Parameters.launcherHigh = false;
-                    launcherControl.highLowIndicator1R.setState(true);
-                    launcherControl.highLowIndicator1G.setState(false);
-                }else{
-                    Parameters.launcherHigh = true;
-                    launcherControl.highLowIndicator1R.setState(false);
-                    launcherControl.highLowIndicator1G.setState(true);
-                }
-                xLastState = true;
-            }else if(!gamepad1.x){
-                xLastState = false;
-            }
+
 
 
             if(gamepad1.y){
@@ -101,6 +90,22 @@ public class DriverControl extends LinearOpMode {
             intakeMode();
 
 
+        }
+    }
+    private void GamepadConstantUpdate(){
+        if(gamepad1.x && !xLastState) {
+            if(Parameters.launcherHigh){
+                Parameters.launcherHigh = false;
+                launcherControl.Update(drive);
+                //launcherControl.SetLauncherLEDHigh(true);
+            }else{
+                Parameters.launcherHigh = true;
+                launcherControl.Update(drive);
+                //launcherControl.SetLauncherLEDHigh(false);
+            }
+            xLastState = true;
+        }else if(!gamepad1.x){
+            xLastState = false;
         }
     }
 
@@ -184,12 +189,30 @@ public class DriverControl extends LinearOpMode {
     }
 
     private void UpdateSystems(){
-        indexer.update();
+        if(!gamepad1.y) {
+            if(yLastState){
+                indexer.drum.setPower(0);
+                indexer.drum.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                indexer.drum.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+            indexer.update();
+            intakeControl.update(pocketSensors);
+            yLastState = gamepad1.y;
+        }else{
+            if(!yLastState){
+                indexer.drum.setPower(0);
+                indexer.drum.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            indexer.drum.setVelocity((gamepad1.right_trigger - gamepad1.left_trigger)*1000);
+            //indexer.DrumManualControl(this);
+            yLastState = gamepad1.y;
+        }
         TelemetryOutput();
-        intakeControl.update(pocketSensors);
+
         driveControl.update(gamepad1);
         drive.updatePoseEstimate();
         launcherControl.Update(drive);
+        GamepadConstantUpdate();
         //Unjam();
 
     }
@@ -222,6 +245,9 @@ public class DriverControl extends LinearOpMode {
                 telemetry.addData("drum Error = ", indexer.targetPosition-indexer.GetDrumPosition());
                // telemetry.addData("Location XY Rot = ", drive.localizer.getPose().position.x);
                 telemetry.addData("distance = ", pocketSensors.GetDetectedPocketDistance());
+                telemetry.addLine("__________________");
+                telemetry.addData("Launcher On = ", Parameters.launcherOn);
+                telemetry.addData("LauncherHigh = ", Parameters.launcherHigh);
               //  telemetry.addData("target velocity = ", LauncherControl.ticksPerSec);
                // telemetry.addData("left RPM = ", launcherControl.launcherLeft.getVelocity());
                 //telemetry.addData("left Power = ", launcherControl.launcherLeft.getPower());

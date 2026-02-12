@@ -16,6 +16,12 @@ public class LauncherControl {
     public DcMotorEx launcherRight;
     public DigitalChannel highLowIndicator1R;
     public DigitalChannel highLowIndicator1G;
+    public DigitalChannel highLowIndicator2R;
+    public DigitalChannel highLowIndicator2G;
+    public DigitalChannel highLowIndicator3R;
+    public DigitalChannel highLowIndicator3G;
+    public DigitalChannel highLowIndicator4R;
+    public DigitalChannel highLowIndicator4G;
 
     public static double ticksPerSec = 0;
 
@@ -25,8 +31,26 @@ public class LauncherControl {
         launcherRight = hardwareMap.get(DcMotorEx.class, "launcherRight");
         highLowIndicator1R = hardwareMap.get(DigitalChannel.class, "lowHigh1R");
         highLowIndicator1G = hardwareMap.get(DigitalChannel.class, "lowHigh1G");
+
+        highLowIndicator2R = hardwareMap.get(DigitalChannel.class, "lowHigh2R");
+        highLowIndicator2G = hardwareMap.get(DigitalChannel.class, "lowHigh2G");
+
+        highLowIndicator3R = hardwareMap.get(DigitalChannel.class, "lowHigh3R");
+        highLowIndicator3G = hardwareMap.get(DigitalChannel.class, "lowHigh3G");
+
+        highLowIndicator4R = hardwareMap.get(DigitalChannel.class, "lowHigh4R");
+        highLowIndicator4G = hardwareMap.get(DigitalChannel.class, "lowHigh4G");
         highLowIndicator1R.setMode(DigitalChannel.Mode.OUTPUT);
         highLowIndicator1G.setMode(DigitalChannel.Mode.OUTPUT);
+
+        highLowIndicator2R.setMode(DigitalChannel.Mode.OUTPUT);
+        highLowIndicator2G.setMode(DigitalChannel.Mode.OUTPUT);
+
+        highLowIndicator3R.setMode(DigitalChannel.Mode.OUTPUT);
+        highLowIndicator3G.setMode(DigitalChannel.Mode.OUTPUT);
+
+        highLowIndicator4R.setMode(DigitalChannel.Mode.OUTPUT);
+        highLowIndicator4G.setMode(DigitalChannel.Mode.OUTPUT);
 
         // Configure motors for velocity control
         launcherLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -42,27 +66,49 @@ public class LauncherControl {
         launcherLeft.setDirection(DcMotor.Direction.REVERSE);
     }
 
+    public void SetLauncherLEDHigh(boolean state){
+        if(state == true){
+            highLowIndicator1R.setState(false);
+            highLowIndicator1G.setState(true);
+            highLowIndicator2R.setState(false);
+            highLowIndicator2G.setState(true);
+            highLowIndicator3R.setState(false);
+            highLowIndicator3G.setState(true);
+            highLowIndicator4R.setState(false);
+            highLowIndicator4G.setState(true);
+        }else{
+            highLowIndicator1R.setState(true);
+            highLowIndicator1G.setState(false);
+            highLowIndicator2R.setState(true);
+            highLowIndicator2G.setState(false);
+            highLowIndicator3R.setState(true);
+            highLowIndicator3G.setState(false);
+            highLowIndicator4R.setState(true);
+            highLowIndicator4G.setState(false);
+        }
+    }
+
     public void Update(MecanumDrive drive){
-        if(Parameters.launcherOn){
+
 
             if (Parameters.launcherHigh){
-                setRPM(Parameters.farRPM);
-                highLowIndicator1R.setState(false);
-                highLowIndicator1G.setState(true);
+                if(Parameters.launcherOn) {
+                    setRPM(Parameters.farRPM);
+                }
+                SetLauncherLEDHigh(true);
             }
             else{
-                setRPM(Parameters.closeRPM);
-                highLowIndicator1R.setState(true);
-                highLowIndicator1G.setState(false);
+                if(Parameters.launcherOn) {
+                    setRPM(Parameters.closeRPM);
+                }
+                SetLauncherLEDHigh(false);
 
-            }
 
-            //double currentLocationX = drive.localizer.getPose().position.x;
-            // if(currentLocationX < -30){launcherControl.setRPM(Parameters.farRPM);}
-            // if(currentLocationX > -30){launcherControl.setRPM(Parameters.closeRPM);}
-        }else{
-            setRPM(0);
         }
+
+            if(!Parameters.launcherOn){
+                setRPM(0);
+            }
        // launcherLeft.setPower(leftPID.PIDControl(500, launcherLeft.getVelocity()));
         //launcherRight.setPower(rightPID.PIDControl(500, launcherRight.getVelocity()));
     }
