@@ -15,7 +15,7 @@ public class BlueFarParameters {
     //FIRST LAUNCH LOCATION
     public static Vector2d launchLocation = new Vector2d(60,-20);
     public static double launchHeading = 200;
-    public static double launchRPM = 1900;
+    public static double launchRPM = 1800;
 
     //FIRST GRAB LOCATION
     public static Pose2d firstGrab = new Pose2d(36, -30, Math.toRadians(270));

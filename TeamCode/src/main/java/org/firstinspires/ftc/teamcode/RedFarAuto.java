@@ -58,6 +58,7 @@ public class RedFarAuto extends LinearOpMode {
                 .strafeTo(RedFarParameters.launchLocation)
                 .turnTo(Math.toRadians(RedFarParameters.launchHeading))
                 .stopAndAdd(new LaunchCycleAction(indexer,launcherControl, drive, RedFarParameters.launchRPM, this, intakeControl, sensorDisplay))  // Second launch cycle
+                .splineToSplineHeading(RedFarParameters.firstGrab,Math.toRadians(90))
                 .build();
 
         Actions.runBlocking(

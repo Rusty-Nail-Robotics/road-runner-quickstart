@@ -27,7 +27,7 @@ public class Parameters {
 
    // public static double drumPower = 0.5;  // Max power for drum movement (0.0 to 1.0); tune for speed vs. precision
     public static double closeRPM = 1650;
-    public static double farRPM = 2050;
+    public static double farRPM = 2100;
     public static double driveGain = 2000;
     public static double driveRotGain = .6;
 
